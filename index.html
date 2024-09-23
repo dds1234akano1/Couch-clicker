@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Couch Clicker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        #couch {
+            width: 200px;
+            cursor: pointer;
+            margin-top: 50px;
+            transition: transform 0.1s;
+        }
+        h1 {
+            font-size: 48px;
+            color: #333;
+        }
+        #score {
+            font-size: 32px;
+            margin: 20px 0;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 32px;
+            text-align: center;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .button:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
+        #shopButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            color: yellow;
+            border: 2px solid yellow;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* Modal styles */
+        #shopModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        #shopContent {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+        }
+        .close {
+            color: red;
+            font-size: 24px;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Couch Clicker</h1>
+    <p id="score">Couches Collected: 0</p>
+    <!-- Couch image -->
+    <img id="couch" src="Couch.jpg" alt="Couch">
+
+    <!-- Shop Button -->
+    <button id="shopButton" onclick="openShop()">Shop</button>
+
+    <!-- Shop Modal -->
+    <div id="shopModal">
+        <div id="shopContent">
+            <span class="close" onclick="closeShop()">&times;</span>
+            <h2>Shop</h2>
+            <button id="upgrade1" class="button" onclick="buyUpgrade1()">Buy Pillow (Cost: 50) +1 per click</button><br>
+            <button id="upgrade2" class="button" onclick="buyUpgrade2()">Buy Blanket (Cost: 200) +5 per click</button><br>
+            <button id="autoClicker" class="button" onclick="buyAutoClicker()">Buy Auto Clicker (Cost: 200) +1 click per second</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let increment = 1;
+
+        let upgrade1Cost = 50;
+        let upgrade2Cost = 200;
+        let autoClickerCost = 200;
+
+        let autoClickerLevel = 0;
+        let autoClickerInterval = null;
+
+        const scoreElement = document.getElementById("score");
+        const couch = document.getElementById("couch");
+
+        // Function to update the score display
+        function updateScore() {
+            scoreElement.textContent = "Couches Collected: " + score;
+            checkUpgrades();
+        }
+
+        // Shake the couch when clicked
+        function shakeCouch() {
+            couch.style.transform = "rotate(-5deg)";
+            setTimeout(function() {
+                couch.style.transform = "rotate(5deg)";
+            }, 50);
+            setTimeout(function() {
+                couch.style.transform = "rotate(0deg)";
+            }, 100);
+        }
+
+        // Function to handle clicking the couch (or keyboard input)
+        function clickCouch() {
+            score += increment;
+            shakeCouch();
+            updateScore();
+        }
+
+        // Event listener for mouse click on couch
+        couch.addEventListener("click", clickCouch);
+
+        // Event listeners for keyboard (Space or Enter key)
+        document.addEventListener("keydown", function(event) {
+            if (event.code === "Space" || event.code === "Enter") {
+                clickCouch();
+            }
+        });
+
+        // Update the cost of the upgrades
+        function checkUpgrades() {
+            document.getElementById("upgrade1").disabled = score < upgrade1Cost;
+            document.getElementById("upgrade2").disabled = score < upgrade2Cost;
+            document.getElementById("autoClicker").disabled = score < autoClickerCost;
+            document.getElementById("upgrade1").textContent = "Buy Pillow (Cost: " + upgrade1Cost + ") +1 per click";
+            document.getElementById("upgrade2").textContent = "Buy Blanket (Cost: " + upgrade2Cost + ") +5 per click";
+            document.getElementById("autoClicker").textContent = "Buy Auto Clicker (Cost: " + autoClickerCost + ") +" + (autoClickerLevel + 1) + " click per second";
+        }
+
+        // Buy the first upgrade (Pillow)
+        function buyUpgrade1() {
+            if (score >= upgrade1Cost) {
+                score -= upgrade1Cost;
+                increment += 1;
+                upgrade1Cost += 100; // Increase cost by 100
+                updateScore();
+            }
+        }
+
+        // Buy the second upgrade (Blanket)
+        function buyUpgrade2() {
+            if (score >= upgrade2Cost) {
+                score -= upgrade2Cost;
+                increment += 5;
+                upgrade2Cost += 150; // Increase cost by 150 for Blanket
+                updateScore();
+            }
+        }
+
+        // Buy the auto clicker
+        function buyAutoClicker() {
+            if (score >= autoClickerCost) {
+                score -= autoClickerCost;
+                autoClickerLevel += 1;
+                autoClickerCost += 310; // Increase cost by 310 for Auto Clicker
+                if (!autoClickerInterval) {
+                    startAutoClicker();
+                }
+                updateScore();
+            }
+        }
+
+        // Start the auto clicker functionality
+        function startAutoClicker() {
+            autoClickerInterval = setInterval(function() {
+                score += autoClickerLevel; // Auto clicks based on the level
+                updateScore();
+            }, 1000); // Clicks every second
+        }
+
+        // Function to open the shop modal
+        function openShop() {
+            document.getElementById("shopModal").style.display = "flex";
+        }
+
+        // Function to close the shop modal
+        function closeShop() {
+            document.getElementById("shopModal").style.display = "none";
+        }
+
+        // Initial update
+        updateScore();
+    </script>
+</body>
+</html>
