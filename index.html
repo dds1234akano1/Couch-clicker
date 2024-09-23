@@ -5,12 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Couch Clicker</title>
     <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
+            background-image: url('Background.jpg'); /* Use the background you uploaded */
+            background-size: cover;
+            background-position: center;
+        }
+        #mainMenu, #gameContent {
+            display: none;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+        #mainMenu {
+            display: flex;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        #mainMenu button {
+            background-color: yellow;
+            color: black;
+            border: none;
+            padding: 15px 32px;
+            font-size: 24px;
+            cursor: pointer;
         }
         #couch {
             width: 200px;
@@ -20,11 +46,12 @@
         }
         h1 {
             font-size: 48px;
-            color: #333;
+            color: white;
         }
         #score {
             font-size: 32px;
             margin: 20px 0;
+            color: white;
         }
         .button {
             background-color: #4CAF50;
@@ -83,13 +110,18 @@
 </head>
 <body>
 
-    <h1>Couch Clicker</h1>
-    <p id="score">Couches Collected: 0</p>
-    <!-- Couch image -->
-    <img id="couch" src="Couch.jpg" alt="Couch">
+    <!-- Main Menu -->
+    <div id="mainMenu">
+        <button onclick="startGame()">PLAY</button>
+    </div>
 
-    <!-- Shop Button -->
-    <button id="shopButton" onclick="toggleShop()">Shop</button>
+    <!-- Game Content -->
+    <div id="gameContent">
+        <h1>Couch Clicker</h1>
+        <p id="score">Couches Collected: 0</p>
+        <img id="couch" src="Couch.jpg" alt="Couch">
+        <button id="shopButton" onclick="toggleShop()">Shop</button>
+    </div>
 
     <!-- Shop Modal -->
     <div id="shopModal">
@@ -116,11 +148,19 @@
         const scoreElement = document.getElementById("score");
         const couch = document.getElementById("couch");
         const shopModal = document.getElementById("shopModal");
+        const mainMenu = document.getElementById("mainMenu");
+        const gameContent = document.getElementById("gameContent");
 
         // Function to update the score display
         function updateScore() {
             scoreElement.textContent = "Couches Collected: " + score;
             checkUpgrades();
+        }
+
+        // Function to start the game from the main menu
+        function startGame() {
+            mainMenu.style.display = "none";
+            gameContent.style.display = "block";
         }
 
         // Shake the couch when clicked
@@ -227,11 +267,20 @@
             autoClickerInterval = setInterval(function() {
                 score += autoClickerLevel; // Auto clicks based on the level
                 updateScore();
-            }, 1000); // Clicks every second
+            }, 1000           
+                                              
+    }, 1000); // Auto click every second
         }
 
-        // Initial update
-        updateScore();
+        // Call this function to ensure everything is updated properly when loading
+        function initializeGame() {
+            updateScore(); // Update score display initially
+            checkUpgrades(); // Disable or enable buttons based on current score
+        }
+
+        // Initialize the game when the page is loaded
+        window.onload = initializeGame;
     </script>
+
 </body>
 </html>
