@@ -20,7 +20,6 @@
         }
         .main-menu {
             text-align: center;
-            display: none;
         }
         .game, .ban-screen {
             display: none;
@@ -63,6 +62,11 @@
             color: yellow;
             margin-bottom: 20px;
         }
+        #upgrades {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
         .cheat-menu {
             position: absolute;
             top: 10px;
@@ -71,6 +75,13 @@
             padding: 10px;
             color: yellow;
             display: none;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            background-color: white;
+            color: black;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -106,6 +117,7 @@
         let autoClickerCost = 200;
         let blanketCost = 150;
         let autoClickers = 0;
+        let blankets = 0;
         let banned = false;
         let cheatMenuActive = false;
         let lastClickTime = 0;
@@ -114,6 +126,8 @@
         const mainMenuDiv = document.getElementById("mainMenu");
         const gameDiv = document.querySelector(".game");
         const banScreenDiv = document.querySelector(".ban-screen");
+        const scoreDiv = document.getElementById("score");
+        const couchImage = document.getElementById("couch-image");
 
         // Show main menu when the page loads
         window.onload = function() {
@@ -129,6 +143,18 @@
             gameDiv.style.display = 'block';
         });
 
+        // Couch click event
+        couchImage.addEventListener('click', function() {
+            const now = Date.now();
+            if (now - lastClickTime < 1) {
+                banPlayer();
+                return;
+            }
+            lastClickTime = now;
+            score++;
+            updateScore();
+        });
+
         // Ban function for cheaters
         function banPlayer() {
             banned = true;
@@ -137,7 +163,89 @@
             localStorage.setItem('banned', 'true');
         }
 
-        // Other game logic (clicking the couch, upgrades, cheat menu, etc.) remains the same.
+        // Update the score display
+        function updateScore() {
+            scoreDiv.innerText = 'Score: ' + score;
+        }
+
+        // Buy Auto Clicker
+        document.getElementById('buyAutoClicker').addEventListener('click', function() {
+            if (score >= autoClickerCost) {
+                score -= autoClickerCost;
+                autoClickerCost += 310;
+                autoClickers++;
+                updateScore();
+                this.innerText = 'Buy Auto Clicker (Cost: ' + autoClickerCost + ')';
+                autoClick();
+            }
+        });
+
+        // Auto Clicker function
+        function autoClick() {
+            setInterval(function() {
+                score += autoClickers;
+                updateScore();
+            }, 1000);
+        }
+
+        // Buy Blanket
+        document.getElementById('buyBlanket').addEventListener('click', function() {
+            if (score >= blanketCost) {
+                score -= blanketCost;
+                blanketCost += 150;
+                blankets++;
+                updateScore();
+                this.innerText = 'Buy Blanket (Cost: ' + blanketCost + ')';
+            }
+        });
+
+        // Cheat Code Detection
+        document.addEventListener('keydown', function(event) {
+            let input = '';
+            document.onkeydown = function(e) {
+                input += e.key;
+                if (input === 'doug') {
+                    toggleCheatMenu();
+                    input = '';
+                }
+            };
+        });
+
+        function toggleCheatMenu() {
+            const cheatMenu = document.querySelector('.cheat-menu');
+            cheatMenuActive = !cheatMenuActive;
+            cheatMenu.style.display = cheatMenuActive ? 'block' : 'none';
+        }
+
+        // Max Money Cheat
+        function maxMoney() {
+            score = 999999;
+            updateScore();
+        }
+
+        // Max Upgrades Cheat
+        function maxUpgrades() {
+            autoClickers = 100;
+            blankets = 100;
+            updateScore();
+        }
+
+        // Prevent holding Enter/Space to spam clicks
+        let isKeyHeld = false;
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                if (!isKeyHeld) {
+                    couchImage.click();
+                    isKeyHeld = true;
+                }
+            }
+        });
+
+        document.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                isKeyHeld = false;
+            }
+        });
     </script>
 </body>
 </html>
