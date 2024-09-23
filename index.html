@@ -5,282 +5,197 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Couch Clicker</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-image: url('Background.PNG'); /* Use the background you uploaded */
+            background-image: url('Background.jpg');
             background-size: cover;
-            background-position: center;
+            font-family: Arial, sans-serif;
+            color: white;
+            text-align: center;
+            margin: 0;
         }
-        #mainMenu, #gameContent {
+        .main-menu, .game, .ban-screen {
             display: none;
-            width: 100%;
-            height: 100%;
-            justify-content: center;
-            align-items: center;
         }
-        #mainMenu {
-            display: flex;
-            background: rgba(0, 0, 0, 0.6);
+        .main-menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
-        #mainMenu button {
+        .ban-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: red;
+            font-size: 48px;
+        }
+        .shop {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
             background-color: yellow;
             color: black;
-            border: none;
-            padding: 15px 32px;
-            font-size: 24px;
             cursor: pointer;
         }
-        #couch {
+        #couch-image {
             width: 200px;
-            cursor: pointer;
             margin-top: 50px;
-            transition: transform 0.1s;
-        }
-        h1 {
-            font-size: 48px;
-            color: white;
-        }
-        #score {
-            font-size: 32px;
-            margin: 20px 0;
-            color: white;
-        }
-        .button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 15px 32px;
-            text-align: center;
-            font-size: 16px;
-            margin: 10px;
             cursor: pointer;
         }
-        .button:disabled {
-            background-color: #888;
-            cursor: not-allowed;
-        }
-        #shopButton {
+        .cheat-menu {
             position: absolute;
             top: 10px;
             right: 10px;
-            background-color: transparent;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
             color: yellow;
-            border: 2px solid yellow;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        /* Modal styles */
-        #shopModal {
             display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-        }
-        #shopContent {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            width: 300px;
-        }
-        .close {
-            color: red;
-            font-size: 24px;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            cursor: pointer;
         }
     </style>
 </head>
 <body>
-
-    <!-- Main Menu -->
-    <div id="mainMenu">
-        <button onclick="startGame()">PLAY</button>
-    </div>
-
-    <!-- Game Content -->
-    <div id="gameContent">
+    <div class="main-menu">
         <h1>Couch Clicker</h1>
-        <p id="score">Couches Collected: 0</p>
-        <img id="couch" src="Couch.jpg" alt="Couch">
-        <button id="shopButton" onclick="toggleShop()">Shop</button>
+        <button id="playButton">PLAY</button>
     </div>
 
-    <!-- Shop Modal -->
-    <div id="shopModal">
-        <div id="shopContent">
-            <span class="close" onclick="closeShop()">&times;</span>
-            <h2>Shop</h2>
-            <button id="upgrade1" class="button" onclick="buyUpgrade1()">Buy Pillow (Cost: 50) +1 per click</button><br>
-            <button id="upgrade2" class="button" onclick="buyUpgrade2()">Buy Blanket (Cost: 200) +5 per click</button><br>
-            <button id="autoClicker" class="button" onclick="buyAutoClicker()">Buy Auto Clicker (Cost: 200) +1 click per second</button>
+    <div class="game">
+        <div id="score">Score: 0</div>
+        <img id="couch-image" src="Couch.jpg" alt="Couch" />
+        <div id="upgrades">
+            <button id="buyAutoClicker">Buy Auto Clicker (Cost: 200)</button>
+            <button id="buyBlanket">Buy Blanket (Cost: 150)</button>
         </div>
+        <div class="shop">SHOP</div>
+    </div>
+
+    <div class="ban-screen">You have been banned!</div>
+
+    <div class="cheat-menu">
+        <button onclick="maxMoney()">Max Money</button>
+        <button onclick="maxUpgrades()">Max Upgrades</button>
     </div>
 
     <script>
         let score = 0;
-        let increment = 1;
-
-        let upgrade1Cost = 50;
-        let upgrade2Cost = 200;
         let autoClickerCost = 200;
+        let blanketCost = 150;
+        let autoClickers = 0;
+        let banned = false;
+        let cheatMenuActive = false;
+        let lastClickTime = 0;
+        let banMessageShown = false;
 
-        let autoClickerLevel = 0;
-        let autoClickerInterval = null;
+        const playButton = document.getElementById("playButton");
+        const gameDiv = document.querySelector(".game");
+        const mainMenuDiv = document.querySelector(".main-menu");
+        const banScreenDiv = document.querySelector(".ban-screen");
+        const couchImage = document.getElementById("couch-image");
+        const cheatMenuDiv = document.querySelector(".cheat-menu");
+        const scoreDiv = document.getElementById("score");
 
-        const scoreElement = document.getElementById("score");
-        const couch = document.getElementById("couch");
-        const shopModal = document.getElementById("shopModal");
-        const mainMenu = document.getElementById("mainMenu");
-        const gameContent = document.getElementById("gameContent");
+        // Play button functionality
+        playButton.addEventListener('click', function() {
+            mainMenuDiv.style.display = 'none';
+            gameDiv.style.display = 'block';
+        });
 
-        // Function to update the score display
-        function updateScore() {
-            scoreElement.textContent = "Couches Collected: " + score;
-            checkUpgrades();
+        // Couch clicking and anti-cheat
+        couchImage.addEventListener('click', function() {
+            if (banned) return;
+
+            const currentTime = new Date().getTime();
+            if (currentTime - lastClickTime < 1) {
+                banPlayer();
+            }
+            lastClickTime = currentTime;
+
+            score++;
+            updateScore();
+        });
+
+        // Keyboard clicking prevention (for space or enter)
+        let spaceOrEnterPressed = false;
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' || event.code === 'Enter') {
+                if (spaceOrEnterPressed) return;
+                spaceOrEnterPressed = true;
+                couchImage.click();
+            }
+        });
+        document.addEventListener('keyup', function(event) {
+            if (event.code === 'Space' || event.code === 'Enter') {
+                spaceOrEnterPressed = false;
+            }
+        });
+
+        // Secret cheat code detection
+        let cheatCode = "";
+        document.addEventListener('keydown', function(event) {
+            cheatCode += event.key.toLowerCase();
+            if (cheatCode.includes("doug")) {
+                toggleCheatMenu();
+                cheatCode = "";  // Reset the code after activation
+            }
+        });
+
+        // Toggle cheat menu
+        function toggleCheatMenu() {
+            cheatMenuActive = !cheatMenuActive;
+            cheatMenuDiv.style.display = cheatMenuActive ? 'block' : 'none';
         }
 
-        // Function to start the game from the main menu
-        function startGame() {
-            mainMenu.style.display = "none";
-            gameContent.style.display = "block";
-        }
-
-        // Shake the couch when clicked
-        function shakeCouch() {
-            couch.style.transform = "rotate(-5deg)";
-            setTimeout(function() {
-                couch.style.transform = "rotate(5deg)";
-            }, 50);
-            setTimeout(function() {
-                couch.style.transform = "rotate(0deg)";
-            }, 100);
-        }
-
-        // Function to handle clicking the couch (or keyboard input)
-        function clickCouch() {
-            score += increment;
-            shakeCouch();
+        // Cheat functions
+        function maxMoney() {
+            score = 999999;
             updateScore();
         }
 
-        // Event listener for mouse click on couch
-        couch.addEventListener("click", clickCouch);
-
-        // Event listeners for keyboard (Space or Enter key)
-        document.addEventListener("keydown", function(event) {
-            if (event.code === "Space" || event.code === "Enter") {
-                clickCouch();
-            }
-        });
-
-        // Toggle shop with 'S' key and close with 'Esc' key
-        document.addEventListener("keydown", function(event) {
-            if (event.code === "KeyS") {
-                toggleShop();
-            } else if (event.code === "Escape") {
-                closeShop();
-            }
-        });
-
-        // Function to toggle shop open/close
-        function toggleShop() {
-            if (shopModal.style.display === "flex") {
-                closeShop();
-            } else {
-                openShop();
-            }
+        function maxUpgrades() {
+            autoClickers = 999999;
+            blanketCost = 999999;
+            autoClickerCost = 999999;
         }
 
-        // Function to open the shop modal
-        function openShop() {
-            shopModal.style.display = "flex";
+        // Update score
+        function updateScore() {
+            scoreDiv.textContent = `Score: ${score}`;
         }
 
-        // Function to close the shop modal
-        function closeShop() {
-            shopModal.style.display = "none";
-        }
-
-        // Update the cost of the upgrades
-        function checkUpgrades() {
-            document.getElementById("upgrade1").disabled = score < upgrade1Cost;
-            document.getElementById("upgrade2").disabled = score < upgrade2Cost;
-            document.getElementById("autoClicker").disabled = score < autoClickerCost;
-            document.getElementById("upgrade1").textContent = "Buy Pillow (Cost: " + upgrade1Cost + ") +1 per click";
-            document.getElementById("upgrade2").textContent = "Buy Blanket (Cost: " + upgrade2Cost + ") +5 per click";
-            document.getElementById("autoClicker").textContent = "Buy Auto Clicker (Cost: " + autoClickerCost + ") +" + (autoClickerLevel + 1) + " click per second";
-        }
-
-        // Buy the first upgrade (Pillow)
-        function buyUpgrade1() {
-            if (score >= upgrade1Cost) {
-                score -= upgrade1Cost;
-                increment += 1;
-                upgrade1Cost += 100; // Increase cost by 100
-                updateScore();
-            }
-        }
-
-        // Buy the second upgrade (Blanket)
-        function buyUpgrade2() {
-            if (score >= upgrade2Cost) {
-                score -= upgrade2Cost;
-                increment += 5;
-                upgrade2Cost += 150; // Increase cost by 150 for Blanket
-                updateScore();
-            }
-        }
-
-        // Buy the auto clicker
-        function buyAutoClicker() {
+        // Auto clicker and blanket upgrade buttons
+        document.getElementById("buyAutoClicker").addEventListener('click', function() {
             if (score >= autoClickerCost) {
                 score -= autoClickerCost;
-                autoClickerLevel += 1;
-                autoClickerCost += 310; // Increase cost by 310 for Auto Clicker
-                if (!autoClickerInterval) {
-                    startAutoClicker();
-                }
+                autoClickers++;
+                autoClickerCost += 310;
                 updateScore();
             }
-        }
+        });
 
-        // Start the auto clicker functionality
-        function startAutoClicker() {
-            autoClickerInterval = setInterval(function() {
-                score += autoClickerLevel; // Auto clicks based on the level
+        document.getElementById("buyBlanket").addEventListener('click', function() {
+            if (score >= blanketCost) {
+                score -= blanketCost;
+                blanketCost += 150;
                 updateScore();
-            }, 1000           
-                                              
-    }, 1000); // Auto click every second
+            }
+        });
+
+        // Ban the player
+        function banPlayer() {
+            banned = true;
+            gameDiv.style.display = 'none';
+            banScreenDiv.style.display = 'block';
+            localStorage.setItem('banned', 'true');
         }
 
-        // Call this function to ensure everything is updated properly when loading
-        function initializeGame() {
-            updateScore(); // Update score display initially
-            checkUpgrades(); // Disable or enable buttons based on current score
+        // Check if banned on page load
+        window.onload = function() {
+            if (localStorage.getItem('banned') === 'true') {
+                banPlayer();
+            }
         }
-
-        // Initialize the game when the page is loaded
-        window.onload = initializeGame;
     </script>
-
 </body>
 </html>
