@@ -5,247 +5,363 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Couch Clicker</title>
     <style>
-        body {
-            background-image: url('Background.jpg');
-            background-size: cover;
-            font-family: Arial, sans-serif;
-            color: white;
+        body, html {
             margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
-        .center-screen {
-            display: flex;
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-image: url('Background.jpg'); /* Use the background you uploaded */
+            background-size: cover;
+            background-position: center;
+        }
+        #mainMenu, #gameContent {
+            display: none;
+            width: 100%;
+            height: 100%;
             justify-content: center;
             align-items: center;
-            height: 100vh;
         }
-        .main-menu {
-            text-align: center;
+        #mainMenu {
+            display: flex;
+            background: rgba(0, 0, 0, 0.6);
         }
-        .game, .ban-screen {
-            display: none;
-        }
-        .ban-screen {
-            color: red;
-            font-size: 48px;
-        }
-        .shop {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px;
+        #mainMenu button {
             background-color: yellow;
             color: black;
-            cursor: pointer;
-        }
-        #couch-image {
-            width: 200px;
-            margin-top: 50px;
-            cursor: pointer;
-        }
-        #playButton {
-            padding: 10px 20px;
+            border: none;
+            padding: 15px 32px;
             font-size: 24px;
             cursor: pointer;
-            background-color: white;
-            color: black;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
         }
-        #madeByDoug {
-            margin-top: 10px;
-            font-size: 14px;
-            color: yellow;
+        #couch {
+            width: 200px;
+            cursor: pointer;
+            margin-top: 50px;
+            transition: transform 0.1s;
         }
-        #title {
+        h1 {
             font-size: 48px;
-            color: yellow;
-            margin-bottom: 20px;
+            color: white;
         }
-        #upgrades {
-            display: flex;
-            flex-direction: column;
-            margin-top: 20px;
+        #score {
+            font-size: 32px;
+            margin: 20px 0;
+            color: white;
         }
-        .cheat-menu {
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 32px;
+            text-align: center;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .button:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
+        #shopButton {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
+            background-color: transparent;
             color: yellow;
-            display: none;
+            border: 2px solid yellow;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
         }
-        button {
-            margin: 5px;
-            padding: 10px;
+        /* Modal styles */
+        #shopModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        #shopContent {
             background-color: white;
-            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+        }
+        .close {
+            color: red;
+            font-size: 24px;
+            position: absolute;
+            top: 10px;
+            right: 20px;
             cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div class="center-screen">
-        <div class="main-menu" id="mainMenu">
-            <h1 id="title">Couch Clicker</h1>
-            <button id="playButton">PLAY</button>
-            <div id="madeByDoug">Made by Doug</div>
-        </div>
+    <!-- Main Menu -->
+    <div id="mainMenu">
+        <button onclick="startGame()">PLAY</button>
     </div>
 
-    <div class="game">
-        <div id="score">Score: 0</div>
-        <img id="couch-image" src="Couch.jpg" alt="Couch" />
-        <div id="upgrades">
-            <button id="buyAutoClicker">Buy Auto Clicker (Cost: 200)</button>
-            <button id="buyBlanket">Buy Blanket (Cost: 150)</button>
-        </div>
-        <div class="shop">SHOP</div>
+    <!-- Game Content -->
+    <div id="gameContent">
+        <h1>Couch Clicker</h1>
+        <p id="score">Couches Collected: 0</p>
+        <img id="couch" src="Couch.jpg" alt="Couch">
+        <button id="shopButton" onclick="toggleShop()">Shop</button>
     </div>
 
-    <div class="ban-screen">You have been banned!</div>
-
-    <div class="cheat-menu">
-        <button onclick="maxMoney()">Max Money</button>
-        <button onclick="maxUpgrades()">Max Upgrades</button>
+    <!-- Shop Modal -->
+    <div id="shopModal">
+        <div id="shopContent">
+            <span class="close" onclick="closeShop()">&times;</span>
+            <h2>Shop</h2>
+            <button id="upgrade1" class="button" onclick="buyUpgrade1()">Buy Pillow (Cost: 50) +1 per click</button><br>
+            <button id="upgrade2" class="button" onclick="buyUpgrade2()">Buy Blanket (Cost: 200) +5 per click</button><br>
+            <button id="autoClicker" class="button" onclick="buyAutoClicker()">Buy Auto Clicker (Cost: 200) +1 click per second</button>
+        </div>
     </div>
 
     <script>
         let score = 0;
+        let increment = 1;
+
+        let upgrade1Cost = 50;
+        let upgrade2Cost = 200;
         let autoClickerCost = 200;
-        let blanketCost = 150;
-        let autoClickers = 0;
-        let blankets = 0;
-        let banned = false;
-        let cheatMenuActive = false;
-        let lastClickTime = 0;
 
-        const playButton = document.getElementById("playButton");
-        const mainMenuDiv = document.getElementById("mainMenu");
-        const gameDiv = document.querySelector(".game");
-        const banScreenDiv = document.querySelector(".ban-screen");
-        const scoreDiv = document.getElementById("score");
-        const couchImage = document.getElementById("couch-image");
+        let autoClickerLevel = 0;
+        let autoClickerInterval = null;
 
-        // Show main menu when the page loads
-        window.onload = function() {
-            mainMenuDiv.style.display = 'block';
-            if (localStorage.getItem('banned') === 'true') {
-                banPlayer();
-            }
-        };
+        const scoreElement = document.getElementById("score");
+        const couch = document.getElementById("couch");
+        const shopModal = document.getElementById("shopModal");
+        const mainMenu = document.getElementById("mainMenu");
+        const gameContent = document.getElementById("gameContent");
 
-        // Play button functionality
-        playButton.addEventListener('click', function() {
-            mainMenuDiv.style.display = 'none';
-            gameDiv.style.display = 'block';
-        });
-
-        // Couch click event
-        couchImage.addEventListener('click', function() {
-            const now = Date.now();
-            if (now - lastClickTime < 1) {
-                banPlayer();
-                return;
-            }
-            lastClickTime = now;
-            score++;
-            updateScore();
-        });
-
-        // Ban function for cheaters
-        function banPlayer() {
-            banned = true;
-            gameDiv.style.display = 'none';
-            banScreenDiv.style.display = 'block';
-            localStorage.setItem('banned', 'true');
-        }
-
-        // Update the score display
+        // Function to update the score display
         function updateScore() {
-            scoreDiv.innerText = 'Score: ' + score;
+            scoreElement.textContent = "Couches Collected: " + score;
+            checkUpgrades();
         }
 
-        // Buy Auto Clicker
-        document.getElementById('buyAutoClicker').addEventListener('click', function() {
+        // Function to start the game from the main menu
+        function startGame() {
+            mainMenu.style.display = "none";
+            gameContent.style.display = "block";
+        }
+
+        // Shake the couch when clicked
+        function shakeCouch() {
+            couch.style.transform = "rotate(-5deg)";
+            setTimeout(function() {
+                couch.style.transform = "rotate(5deg)";
+            }, 50);
+            setTimeout(function() {
+                couch.style.transform = "rotate(0deg)";
+            }, 100);
+        }
+
+        // Function to handle clicking the couch (or keyboard input)
+        function clickCouch() {
+            score += increment;
+            shakeCouch();
+            updateScore();
+        }
+
+        // Event listener for mouse click on couch
+        couch.addEventListener("click", clickCouch);
+
+        // Event listeners for keyboard (Space or Enter key)
+        document.addEventListener("keydown", function(event) {
+            if (event.code === "Space" || event.code === "Enter") {
+                clickCouch();
+            }
+        });
+
+        // Toggle shop with 'S' key and close with 'Esc' key
+        document.addEventListener("keydown", function(event) {
+            if (event.code === "KeyS") {
+                toggleShop();
+            } else if (event.code === "Escape") {
+                closeShop();
+            }
+        });
+
+        // Function to toggle shop open/close
+        function toggleShop() {
+            if (shopModal.style.display === "flex") {
+                closeShop();
+            } else {
+                openShop();
+            }
+        }
+
+        // Function to open the shop modal
+        function openShop() {
+            shopModal.style.display = "flex";
+        }
+
+        // Function to close the shop modal
+        function closeShop() {
+            shopModal.style.display = "none";
+        }
+
+        // Update the cost of the upgrades
+        function checkUpgrades() {
+            document.getElementById("upgrade1").disabled = score < upgrade1Cost;
+            document.getElementById("upgrade2").disabled = score < upgrade2Cost;
+            document.getElementById("autoClicker").disabled = score < autoClickerCost;
+            document.getElementById("upgrade1").textContent = "Buy Pillow (Cost: " + upgrade1Cost + ") +1 per click";
+            document.getElementById("upgrade2").textContent = "Buy Blanket (Cost: " + upgrade2Cost + ") +5 per click";
+            document.getElementById("autoClicker").textContent = "Buy Auto Clicker (Cost: " + autoClickerCost + ") +" + (autoClickerLevel + 1) + " click per second";
+        }
+
+        // Buy the first upgrade (Pillow)
+        function buyUpgrade1() {
+            if (score >= upgrade1Cost) {
+                score -= upgrade1Cost;
+                increment += 1;
+                upgrade1Cost += 100; // Increase cost by 100
+                updateScore();
+            }
+        }
+
+        // Buy the second upgrade (Blanket)
+        function buyUpgrade2() {
+            if (score >= upgrade2Cost) {
+                score -= upgrade2Cost;
+                increment += 5;
+                upgrade2Cost += 150; // Increase cost by 150 for Blanket
+                updateScore();
+            }
+        }
+
+        // Buy the auto clicker
+        function buyAutoClicker() {
             if (score >= autoClickerCost) {
                 score -= autoClickerCost;
-                autoClickerCost += 310;
-                autoClickers++;
+                autoClickerLevel += 1;
+                autoClickerCost += 310; // Increase cost by 310 for Auto Clicker
+                if (!autoClickerInterval) {
+                    startAutoClicker();
+                }
                 updateScore();
-                this.innerText = 'Buy Auto Clicker (Cost: ' + autoClickerCost + ')';
-                autoClick();
             }
-        });
+        }
 
-        // Auto Clicker function
-        function autoClick() {
-            setInterval(function() {
-                score += autoClickers;
+        // Start the auto clicker functionality
+        function startAutoClicker() {
+            autoClickerInterval = setInterval(function() {
+                score += autoClickerLevel; // Auto clicks based on the level
                 updateScore();
             }, 1000);
         }
 
-        // Buy Blanket
-        document.getElementById('buyBlanket').addEventListener('click', function() {
-            if (score >= blanketCost) {
-                score -= blanketCost;
-                blanketCost += 150;
-                blankets++;
-                updateScore();
-                this.innerText = 'Buy Blanket (Cost: ' + blanketCost + ')';
+        // Call this function to ensure everything is updated properly when loading
+        function initializeGame() {
+            updateScore(); // Update score display initially
+            checkUpgrades(); // Disable or enable buttons based on current score
+        }
+
+        // Initialize the game when the page is loaded
+        window.onload = initializeGame;
+    </script>
+
+    <!-- Made by Doug Button -->
+    <button id="madeByDoug" style="position: absolute; bottom: 10px; right: 10px; background-color: black; color: white; border: 2px solid white; padding: 10px 20px; cursor: pointer;">
+        Made by Doug
+    </button>
+
+    <script>
+        // Cheat code for opening and closing the cheat menu
+        let cheatMenuVisible = false;
+
+        document.addEventListener("keydown", function(event) {
+            const cheatCode = "doug";
+            let inputBuffer = "";
+
+            inputBuffer += event.key.toLowerCase();
+
+            // Check if input matches 'doug' and show/hide cheat menu
+            if (inputBuffer.includes(cheatCode)) {
+                if (!cheatMenuVisible) {
+                    activateCheatMenu();
+                } else {
+                    deactivateCheatMenu();
+                }
+                inputBuffer = ""; // Clear input buffer after cheat code is typed
             }
         });
 
-        // Cheat Code Detection
-        document.addEventListener('keydown', function(event) {
-            let input = '';
-            document.onkeydown = function(e) {
-                input += e.key;
-                if (input === 'doug') {
-                    toggleCheatMenu();
-                    input = '';
-                }
-            };
-        });
-
-        function toggleCheatMenu() {
-            const cheatMenu = document.querySelector('.cheat-menu');
-            cheatMenuActive = !cheatMenuActive;
-            cheatMenu.style.display = cheatMenuActive ? 'block' : 'none';
-        }
-
-        // Max Money Cheat
-        function maxMoney() {
+        function activateCheatMenu() {
+            cheatMenuVisible = true;
             score = 999999;
+            increment = 100;
+            autoClickerLevel = 10;
             updateScore();
+            alert("Cheat mode activated! Max money and max upgrades applied.");
         }
 
-        // Max Upgrades Cheat
-        function maxUpgrades() {
-            autoClickers = 100;
-            blankets = 100;
-            updateScore();
+        function deactivateCheatMenu() {
+            cheatMenuVisible = false;
+            alert("Cheat menu closed, but cheats are still in effect.");
         }
 
-        // Prevent holding Enter/Space to spam clicks
-        let isKeyHeld = false;
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                if (!isKeyHeld) {
-                    couchImage.click();
-                    isKeyHeld = true;
+        // Anti-spam logic (prevent holding down Enter or Space)
+        let lastClickTime = 0;
+
+        document.addEventListener("keydown", function(event) {
+            const currentTime = new Date().getTime();
+            if (event.code === "Space" || event.code === "Enter") {
+                if (currentTime - lastClickTime < 100) { // Allow clicking only if >100ms have passed since the last click
+                    event.preventDefault();
+                }
+                lastClickTime = currentTime;
+            }
+        });
+
+        // Anti-cheat mechanism (ban for clicking faster than 1ms)
+        let clickTimestamps = [];
+
+        couch.addEventListener("click", function() {
+            const currentTime = new Date().getTime();
+            clickTimestamps.push(currentTime);
+
+            if (clickTimestamps.length > 2) {
+                const clickInterval = clickTimestamps[clickTimestamps.length - 1] - clickTimestamps[clickTimestamps.length - 2];
+                if (clickInterval < 1) { // If clicks are faster than 1ms
+                    banPlayer();
                 }
             }
         });
 
-        document.addEventListener('keyup', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                isKeyHeld = false;
+        function banPlayer() {
+            alert("You have been banned for cheating.");
+            document.body.innerHTML = "<h1 style='color:red;'>You have been banned</h1>";
+            localStorage.setItem("banned", "true");
+        }
+
+        // Check if the player is banned on page load
+        window.onload = function() {
+            if (localStorage.getItem("banned") === "true") {
+                document.body.innerHTML = "<h1 style='color:red;'>You have been banned</h1>";
+            } else {
+                initializeGame();
             }
-        });
+        }
     </script>
 </body>
 </html>
