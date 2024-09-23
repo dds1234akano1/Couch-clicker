@@ -89,7 +89,7 @@
     <img id="couch" src="Couch.jpg" alt="Couch">
 
     <!-- Shop Button -->
-    <button id="shopButton" onclick="openShop()">Shop</button>
+    <button id="shopButton" onclick="toggleShop()">Shop</button>
 
     <!-- Shop Modal -->
     <div id="shopModal">
@@ -115,6 +115,7 @@
 
         const scoreElement = document.getElementById("score");
         const couch = document.getElementById("couch");
+        const shopModal = document.getElementById("shopModal");
 
         // Function to update the score display
         function updateScore() {
@@ -149,6 +150,34 @@
                 clickCouch();
             }
         });
+
+        // Toggle shop with 'S' key and close with 'Esc' key
+        document.addEventListener("keydown", function(event) {
+            if (event.code === "KeyS") {
+                toggleShop();
+            } else if (event.code === "Escape") {
+                closeShop();
+            }
+        });
+
+        // Function to toggle shop open/close
+        function toggleShop() {
+            if (shopModal.style.display === "flex") {
+                closeShop();
+            } else {
+                openShop();
+            }
+        }
+
+        // Function to open the shop modal
+        function openShop() {
+            shopModal.style.display = "flex";
+        }
+
+        // Function to close the shop modal
+        function closeShop() {
+            shopModal.style.display = "none";
+        }
 
         // Update the cost of the upgrades
         function checkUpgrades() {
@@ -199,16 +228,6 @@
                 score += autoClickerLevel; // Auto clicks based on the level
                 updateScore();
             }, 1000); // Clicks every second
-        }
-
-        // Function to open the shop modal
-        function openShop() {
-            document.getElementById("shopModal").style.display = "flex";
-        }
-
-        // Function to close the shop modal
-        function closeShop() {
-            document.getElementById("shopModal").style.display = "none";
         }
 
         // Initial update
