@@ -51,8 +51,22 @@
             font-size: 16px;
             cursor: pointer;
         }
+
+        /* "Made by Doug" button */
+        #madeByDougButton {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
         /* Modal styles */
-        #shopModal {
+        #shopModal, #infoModal {
             display: none;
             position: fixed;
             z-index: 1;
@@ -64,13 +78,15 @@
             justify-content: center;
             align-items: center;
         }
-        #shopContent {
+
+        #shopContent, #infoContent {
             background-color: white;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
             width: 300px;
         }
+
         .close {
             color: red;
             font-size: 24px;
@@ -79,43 +95,15 @@
             right: 20px;
             cursor: pointer;
         }
-        /* 'Made by Doug' button styles */
-        #madeByDoug {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background-color: black;
-            color: white;
-            border: 2px solid white;
-            padding: 10px 20px;
-            cursor: pointer;
+
+        /* Credits Modal Content */
+        #infoContent h2 {
+            margin: 10px 0;
+            color: #333;
         }
-        #infoModal {
-            display: none;
-            position: fixed;
-            z-index: 2;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-        }
-        #infoContent {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            width: 400px;
-        }
-        .closeInfo {
-            color: red;
-            font-size: 24px;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            cursor: pointer;
+        #infoContent p {
+            font-size: 18px;
+            color: #666;
         }
     </style>
 </head>
@@ -140,17 +128,17 @@
         </div>
     </div>
 
-    <!-- Made by Doug Button -->
-    <button id="madeByDoug" onclick="openInfoModal()">Made by Doug</button>
+    <!-- "Made by Doug" Button -->
+    <button id="madeByDougButton" onclick="openInfoModal()">Made by Doug</button>
 
     <!-- Info Modal -->
     <div id="infoModal">
         <div id="infoContent">
-            <span class="closeInfo" onclick="closeInfoModal()">&times;</span>
-            <h2>Game Info</h2>
-            <p>Game Creator and Coder: Doug</p>
-            <p>Game Ideas: Zayden, Kaleb</p>
-            <p>Game Purpose: A fun, unlocked school project in case Banana Clicker gets banned</p>
+            <span class="close" onclick="closeInfoModal()">&times;</span>
+            <h2>Game Credits</h2>
+            <p><strong>Game Creator and Coder:</strong> Doug</p>
+            <p><strong>Game Ideas:</strong> Zayden, Kaleb</p>
+            <p><strong>Game Purpose:</strong> A fun unlocked school project in case Banana Clicker gets banned.</p>
         </div>
     </div>
 
@@ -232,6 +220,16 @@
             shopModal.style.display = "none";
         }
 
+        // Function to open the "Made by Doug" info modal
+        function openInfoModal() {
+            infoModal.style.display = "flex";
+        }
+
+        // Function to close the "Made by Doug" info modal
+        function closeInfoModal() {
+            infoModal.style.display = "none";
+        }
+
         // Update the cost of the upgrades
         function checkUpgrades() {
             document.getElementById("upgrade1").disabled = score < upgrade1Cost;
@@ -269,26 +267,19 @@
                 autoClickerLevel += 1;
                 autoClickerCost += 310; // Increase cost by 310 for Auto Clicker
                 if (!autoClickerInterval) {
+                    start
                     startAutoClicker();
                 }
                 updateScore();
             }
+        }
+
         // Start the auto clicker functionality
         function startAutoClicker() {
             autoClickerInterval = setInterval(function() {
                 score += autoClickerLevel; // Auto clicks based on the level
                 updateScore();
             }, 1000); // Clicks every second
-        }
-
-        // Open the "Made by Doug" info modal
-        function openInfoModal() {
-            infoModal.style.display = "flex";
-        }
-
-        // Close the "Made by Doug" info modal
-        function closeInfoModal() {
-            infoModal.style.display = "none";
         }
 
         // Initial update
