@@ -5,38 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Couch Clicker</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-image: url('Background.jpg'); /* Use the background you uploaded */
-            background-size: cover;
-            background-position: center;
-        }
-        #mainMenu, #gameContent {
-            display: none;
-            width: 100%;
-            height: 100%;
-            justify-content: center;
-            align-items: center;
-        }
-        #mainMenu {
-            display: flex;
-            background: rgba(0, 0, 0, 0.6);
-        }
-        #mainMenu button {
-            background-color: yellow;
-            color: black;
-            border: none;
-            padding: 15px 32px;
-            font-size: 24px;
-            cursor: pointer;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
         }
         #couch {
             width: 200px;
@@ -46,12 +20,11 @@
         }
         h1 {
             font-size: 48px;
-            color: white;
+            color: #333;
         }
         #score {
             font-size: 32px;
             margin: 20px 0;
-            color: white;
         }
         .button {
             background-color: #4CAF50;
@@ -110,18 +83,13 @@
 </head>
 <body>
 
-    <!-- Main Menu -->
-    <div id="mainMenu">
-        <button onclick="startGame()">PLAY</button>
-    </div>
+    <h1>Couch Clicker</h1>
+    <p id="score">Couches Collected: 0</p>
+    <!-- Couch image -->
+    <img id="couch" src="Couch.jpg" alt="Couch">
 
-    <!-- Game Content -->
-    <div id="gameContent">
-        <h1>Couch Clicker</h1>
-        <p id="score">Couches Collected: 0</p>
-        <img id="couch" src="Couch.jpg" alt="Couch">
-        <button id="shopButton" onclick="toggleShop()">Shop</button>
-    </div>
+    <!-- Shop Button -->
+    <button id="shopButton" onclick="toggleShop()">Shop</button>
 
     <!-- Shop Modal -->
     <div id="shopModal">
@@ -148,19 +116,11 @@
         const scoreElement = document.getElementById("score");
         const couch = document.getElementById("couch");
         const shopModal = document.getElementById("shopModal");
-        const mainMenu = document.getElementById("mainMenu");
-        const gameContent = document.getElementById("gameContent");
 
         // Function to update the score display
         function updateScore() {
             scoreElement.textContent = "Couches Collected: " + score;
             checkUpgrades();
-        }
-
-        // Function to start the game from the main menu
-        function startGame() {
-            mainMenu.style.display = "none";
-            gameContent.style.display = "block";
         }
 
         // Shake the couch when clicked
@@ -267,101 +227,11 @@
             autoClickerInterval = setInterval(function() {
                 score += autoClickerLevel; // Auto clicks based on the level
                 updateScore();
-            }, 1000);
+            }, 1000); // Clicks every second
         }
 
-        // Call this function to ensure everything is updated properly when loading
-        function initializeGame() {
-            updateScore(); // Update score display initially
-            checkUpgrades(); // Disable or enable buttons based on current score
-        }
-
-        // Initialize the game when the page is loaded
-        window.onload = initializeGame;
-    </script>
-
-    <!-- Made by Doug Button -->
-    <button id="madeByDoug" style="position: absolute; bottom: 10px; right: 10px; background-color: black; color: white; border: 2px solid white; padding: 10px 20px; cursor: pointer;">
-        Made by Doug
-    </button>
-
-    <script>
-        // Cheat code for opening and closing the cheat menu
-        let cheatMenuVisible = false;
-
-        document.addEventListener("keydown", function(event) {
-            const cheatCode = "doug";
-            let inputBuffer = "";
-
-            inputBuffer += event.key.toLowerCase();
-
-            // Check if input matches 'doug' and show/hide cheat menu
-            if (inputBuffer.includes(cheatCode)) {
-                if (!cheatMenuVisible) {
-                    activateCheatMenu();
-                } else {
-                    deactivateCheatMenu();
-                }
-                inputBuffer = ""; // Clear input buffer after cheat code is typed
-            }
-        });
-
-        function activateCheatMenu() {
-            cheatMenuVisible = true;
-            score = 999999;
-            increment = 100;
-            autoClickerLevel = 10;
-            updateScore();
-            alert("Cheat mode activated! Max money and max upgrades applied.");
-        }
-
-        function deactivateCheatMenu() {
-            cheatMenuVisible = false;
-            alert("Cheat menu closed, but cheats are still in effect.");
-        }
-
-        // Anti-spam logic (prevent holding down Enter or Space)
-        let lastClickTime = 0;
-
-        document.addEventListener("keydown", function(event) {
-            const currentTime = new Date().getTime();
-            if (event.code === "Space" || event.code === "Enter") {
-                if (currentTime - lastClickTime < 100) { // Allow clicking only if >100ms have passed since the last click
-                    event.preventDefault();
-                }
-                lastClickTime = currentTime;
-            }
-        });
-
-        // Anti-cheat mechanism (ban for clicking faster than 1ms)
-        let clickTimestamps = [];
-
-        couch.addEventListener("click", function() {
-            const currentTime = new Date().getTime();
-            clickTimestamps.push(currentTime);
-
-            if (clickTimestamps.length > 2) {
-                const clickInterval = clickTimestamps[clickTimestamps.length - 1] - clickTimestamps[clickTimestamps.length - 2];
-                if (clickInterval < 1) { // If clicks are faster than 1ms
-                    banPlayer();
-                }
-            }
-        });
-
-        function banPlayer() {
-            alert("You have been banned for cheating.");
-            document.body.innerHTML = "<h1 style='color:red;'>You have been banned</h1>";
-            localStorage.setItem("banned", "true");
-        }
-
-        // Check if the player is banned on page load
-        window.onload = function() {
-            if (localStorage.getItem("banned") === "true") {
-                document.body.innerHTML = "<h1 style='color:red;'>You have been banned</h1>";
-            } else {
-                initializeGame();
-            }
-        }
+        // Initial update
+        updateScore();
     </script>
 </body>
 </html>
